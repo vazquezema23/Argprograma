@@ -1,0 +1,231 @@
+CLASE 5
+public class Producto {
+    private String nombre;
+    private double precio;
+    
+    public Producto(String nombre, double precio) {
+        this.nombre = nombre;
+        this.precio = precio;
+    }
+    
+    public String getNombre() {
+        return nombre;
+    }
+    
+    public double getPrecio() {
+        return precio;
+    }
+}
+
+public class ItemCarrito {
+    private Producto producto;
+    private int cantidad;
+    
+    public ItemCarrito(Producto producto, int cantidad) {
+        this.producto = producto;
+        this.cantidad = cantidad;
+    }
+    
+    public Producto getProducto() {
+        return producto;
+    }
+    
+    public int getCantidad() {
+        return cantidad;
+    }
+    
+    public double getPrecioTotal() {
+        return producto.getPrecio() * cantidad;
+    }
+}
+
+public class Carrito {
+    private List<ItemCarrito> items = new ArrayList<>();
+    
+    public void agregarItem(Producto producto, int cantidad) {
+        items.add(new ItemCarrito(producto, cantidad));
+    }
+    
+    public void eliminarItem(int indice) {
+        items.remove(indice);
+    }
+    
+    public double getPrecioTotal() {
+        double precioTotal = 0;
+        for (ItemCarrito item : items) {
+            precioTotal += item.getPrecioTotal();
+        }
+        return precioTotal;
+    }
+}
+
+public abstract class Descuento {
+    private String descripcion;
+    
+    public Descuento(String descripcion) {
+        this.descripcion = descripcion;
+    }
+    
+    public String getDescripcion() {
+        return descripcion;
+    }
+    
+    public abstract double aplicarDescuento(double precio);
+}
+
+public class DescuentoPorcentaje extends Descuento {
+    private double porcentaje;
+    
+    public DescuentoPorcentaje(String descripcion, double porcentaje) {
+        super(descripcion);
+        this.porcentaje = porcentaje;
+    }
+    
+    public double getPorcentaje() {
+        return porcentaje;
+    }
+    
+    public double aplicarDescuento(double precio) {
+        return precio * (1 - porcentaje);
+    }
+}
+
+public class DescuentoCantidad extends Descuento {
+    private double descuento;
+    private int cantidadMinima;
+    
+    public DescuentoCantidad(String descripcion, double descuento, int cantidadMinima) {
+        super(descripcion);
+        this.descuento = descuento;
+        this.cantidadMinima = cantidadMinima;
+    }
+    
+    public double getDescuento() {
+        return descuento;
+    }
+    
+    public int getCantidadMinima() {
+        return cantidadMinima;
+    }
+    
+    public double aplicarDescuento(double precio) {
+        if (cantidadMinima <= 0 || cantidadMinima > items.size()) {
+            return precio;
+        }
+        return precio - descuento;
+    }
+}
+
+public class CarritoDeCompras {
+    private List<ItemCarrito> items = new ArrayList<>();
+    private double descuento = 0; // Nuevo parámetro de descuento y su valor
+    
+    public void agregarItem(Producto producto, int cantidad) {
+        items.add(new ItemCarrito(producto, cantidad));
+    }
+    
+    public void eliminarItem(int indice) {
+        items.remove(indice);
+    }
+    
+    public double getPrecioTotal() {
+        double precioTotal = 0;
+        for (ItemCarrito item : items) {
+            precioTotal += item.getPrecioTotal();
+        }
+        
+        if (descuento > 0) { // Si hay un descuento aplicado
+            if (descuento < 1) { // Si es un descuento en porcentaje
+                precioTotal = precioTotal * (1 - descuento); // Aplicar descuento por porcentaje
+            } else { // Si es un descuento fijo
+                precioTotal = precioTotal - descuento; // Restar el descuento fijo
+            }
+        }
+        
+        return precioTotal;
+    }
+    
+    public void setDescuento(double descuento) {
+        this.descuento = descuento;
+    }
+}
+
+public class DescuentoPorcentajeConTope extends DescuentoPorcentaje {
+    private double tope;
+
+    public DescuentoPorcentajeConTope(String descripcion, double porcentaje, double tope) {
+        super(descripcion, porcentaje);
+        this.tope = tope;
+    }
+
+    public double getTope() {
+        return tope;
+    }
+
+    @Override
+    public double aplicarDescuento(double precio) {
+        double descuento = super.aplicarDescuento(precio);
+        return Math.max(descuento, descuento - tope);
+    }
+}
+
+public class CarritoTest {
+  
+  // Pruebas para el método precio de la clase Carrito
+  
+  @Test
+  public void testPrecioSinDescuento() {
+    Carrito carrito = new Carrito();
+    Producto producto1 = new Producto("jabón en polvo", 40);
+    Producto producto2 = new Producto("esponjas", 10);
+    Producto producto3 = new Producto("chocolates", 100);
+    carrito.agregarItem(producto1, 1);
+    carrito.agregarItem(producto2, 3);
+    carrito.agregarItem(producto3, 2);
+    double precioEsperado = 1 * 40 + 3 * 10 + 2 * 100; // = 270
+    assertEquals(precioEsperado, carrito.getPrecio(), 0.001);
+  }
+  
+  @Test
+  public void testPrecioConDescuentoFijo() {
+    Carrito carrito = new Carrito();
+    Producto producto1 = new Producto("jabón en polvo", 40);
+    Producto producto2 = new Producto("esponjas", 10);
+    Producto producto3 = new Producto("chocolates", 100);
+    carrito.agregarItem(producto1, 1);
+    carrito.agregarItem(producto2, 3);
+    carrito.agregarItem(producto3, 2);
+    DescuentoFijo descuento = new DescuentoFijo("Descuento de prueba", 50);
+    carrito.aplicarDescuento(descuento);
+    double precioEsperado = (1 * 40 + 3 * 10 + 2 * 100) - 50; // = 220
+    assertEquals(precioEsperado, carrito.getPrecio(), 0.001);
+  }
+  
+  @Test
+  public void testPrecioConDescuentoPorcentaje() {
+    Carrito carrito = new Carrito();
+    Producto producto1 = new Producto("jabón en polvo", 40);
+    Producto producto2 = new Producto("esponjas", 10);
+    Producto producto3 = new Producto("chocolates", 100);
+    carrito.agregarItem(producto1, 1);
+    carrito.agregarItem(producto2, 3);
+    carrito.agregarItem(producto3, 2);
+    DescuentoPorcentaje descuento = new DescuentoPorcentaje("Descuento de prueba", 0.2);
+    carrito.aplicarDescuento(descuento);
+    double precioEsperado = (1 * 40 + 3 * 10 + 2 * 100) * (1 - 0.2); // = 216
+    assertEquals(precioEsperado, carrito.getPrecio(), 0.001);
+  }
+  
+  // Pruebas para el descuento DescuentoFijo
+  
+  @Test
+  public void testDescuentoFijoSinAplicar() {
+    DescuentoFijo descuento = new DescuentoFijo("Descuento de prueba", 50);
+    double precio = 100;
+    double precioEsperado = 100;
+    assertEquals(precioEsperado, descuento.aplicarDescuento(precio), 0.001);
+  }
+  
+  @Test
+  public void testDescuentoFijoAplicado() {
+    Desc

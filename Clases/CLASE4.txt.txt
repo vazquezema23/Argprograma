@@ -1,0 +1,165 @@
+CLASE 4
+1-
+import java.util.Arrays;
+import java.util.Scanner;
+
+public class OrdenarNumeros {
+    public static void main(String[] args) {
+        int num1 = Integer.parseInt(args[0]);
+        int num2 = Integer.parseInt(args[1]);
+        int num3 = Integer.parseInt(args[2]);
+        char orden = args[3].charAt(0);
+        
+        int[] numeros = {num1, num2, num3};
+        
+        if (orden == 'a') {
+            Arrays.sort(numeros);
+        } else if (orden == 'd') {
+            Arrays.sort(numeros);
+            int[] numerosInvertidos = new int[numeros.length];
+            for (int i = 0; i < numeros.length; i++) {
+                numerosInvertidos[i] = numeros[numeros.length - 1 - i];
+            }
+            numeros = numerosInvertidos;
+        } else {
+            System.out.println("Orden no reconocido");
+            return;
+        }
+        
+        System.out.println("Los números ordenados son:");
+        for (int num : numeros) {
+            System.out.println(num);
+        }
+        
+        Scanner sc = new Scanner(System.in);
+        for (int i = 0; i < numeros.length; i++) {
+            System.out.print("Ingrese un número: ");
+            String input = sc.nextLine();
+            if (!input.isEmpty()) {
+                int num = Integer.parseInt(input);
+                numeros[i] = num;
+            }
+        }
+        
+        // Usando función para evitar repetir código
+        ordenarNumeros(numeros, orden);
+        
+        System.out.println("Los números ordenados son:");
+        for (int num : numeros) {
+            System.out.println(num);
+        }
+    }
+    
+    public static void ordenarNumeros(int[] numeros, char orden) {
+        if (orden == 'a') {
+            Arrays.sort(numeros);
+        } else if (orden == 'd') {
+            Arrays.sort(numeros);
+            int[] numerosInvertidos = new int[numeros.length];
+            for (int i = 0; i < numeros.length; i++) {
+                numerosInvertidos[i] = numeros[numeros.length - 1 - i];
+            }
+            numeros = numerosInvertidos;
+        } else {
+            System.out.println("Orden no reconocido");
+            return;
+        }
+    }
+}
+
+2- 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+  public static void main(String[] args) {
+    if (args.length != 2) {
+      System.out.println("Debe ingresar la ruta del archivo y la operación a realizar (sum/mul).");
+      return;
+    }
+
+    String filePath = args[0];
+    String operation = args[1];
+    int result = 0;
+
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(filePath));
+      String line;
+
+      while ((line = reader.readLine()) != null) {
+        int number = Integer.parseInt(line.trim());
+
+        if (operation.equals("sum")) {
+          result += number;
+        } else if (operation.equals("mul")) {
+          result *= number;
+        }
+      }
+
+      reader.close();
+    } catch (IOException e) {
+      System.out.println("Error al leer el archivo: " + e.getMessage());
+      return;
+    } catch (NumberFormatException e) {
+      System.out.println("El archivo debe contener solamente números: " + e.getMessage());
+      return;
+    }
+
+    System.out.println("El resultado de la operación " + operation + " es: " + result);
+  }
+}
+
+3- 
+import java.io.*;
+
+public class CifradoCesar {
+
+    public static void main(String[] args) throws IOException {
+        // Validar argumentos
+        if (args.length != 4) {
+            System.out.println("Uso: java CifradoCesar <codificar|decodificar> <desplazamiento> <archivoEntrada> <archivoSalida>");
+            System.exit(1);
+        }
+
+        // Leer argumentos
+        boolean codificar = args[0].equalsIgnoreCase("codificar");
+        int desplazamiento = Integer.parseInt(args[1]);
+        String archivoEntrada = args[2];
+        String archivoSalida = args[3];
+
+        // Abrir archivos
+        BufferedReader lector = new BufferedReader(new FileReader(archivoEntrada));
+        BufferedWriter escritor = new BufferedWriter(new FileWriter(archivoSalida));
+
+        // Cifrar o descifrar el texto
+        String linea;
+        while ((linea = lector.readLine()) != null) {
+            String resultado = codificar ? cifrar(linea, desplazamiento) : descifrar(linea, desplazamiento);
+            escritor.write(resultado);
+            escritor.newLine();
+        }
+
+        // Cerrar archivos
+        lector.close();
+        escritor.close();
+    }
+
+    public static String cifrar(String texto, int desplazamiento) {
+        StringBuilder resultado = new StringBuilder();
+        for (int i = 0; i < texto.length(); i++) {
+            char c = texto.charAt(i);
+            if (Character.isLetter(c)) {
+                char base = Character.isLowerCase(c) ? 'a' : 'A';
+                c = (char) (base + (c - base + desplazamiento) % 26);
+            }
+            resultado.append(c);
+        }
+        return resultado.toString();
+    }
+
+    public static String descifrar(String texto, int desplazamiento) {
+        return cifrar(texto, 26 - desplazamiento);
+    }
+
+}
